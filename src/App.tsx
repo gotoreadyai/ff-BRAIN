@@ -11,11 +11,13 @@ import PageTransition from './ui/PageTransition'
 // Screens
 import PhaseIntroScreen from './features/coach/screens/PhaseIntroScreen'
 import DayPrepScreen from './features/coach/screens/DayPrepScreen'
+import RestDayScreen from './features/coach/screens/RestDayScreen'
 import WorkoutScreen from './features/coach/screens/WorkoutScreen'
 import FeedbackScreen from './features/coach/screens/FeedbackScreen'
 import RecoveryScreen from './features/coach/screens/RecoveryScreen'
 import PhaseCompleteScreen from './features/coach/screens/PhaseCompleteScreen'
 import ProgressionScreen from './features/coach/screens/ProgressionScreen'
+import ProgressOverviewScreen from './features/coach/screens/ProgressOverviewScreen'
 
 import type { LangCode, Level } from './engine/model'
 import './index.css'
@@ -28,7 +30,7 @@ export default function App() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-gray-400 text-sm">Ładowanie FitPack...</div>
+        <div className="text-gray-400 text-sm">Ładowanie FitBrain Pack...</div>
       </div>
     )
   }
@@ -61,8 +63,9 @@ type AppWithPackProps = {
 function AppWithPack({ pack, lang, level, onLangChange, onLevelChange }: AppWithPackProps) {
   const { telemetry, isLoading: telemetryLoading } = useTelemetry()
   const coach = useCoach(pack, lang, level, telemetry)
+  const [showProgressOverview, setShowProgressOverview] = useState(false)
 
-  if (telemetryLoading || !coach.phase) {
+  if (telemetryLoading || !coach.phase || !coach.progression) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-gray-400 text-sm">Inicjalizacja AI Coach...</div>
@@ -82,64 +85,93 @@ function AppWithPack({ pack, lang, level, onLangChange, onLevelChange }: AppWith
       currentDay={coach.state.currentDay}
       phases={phases}
       onPhaseChange={coach.goToPhase}
+      onShowProgress={() => setShowProgressOverview(true)}
     >
-      <PageTransition key={coach.state.screen}>
-        {coach.state.screen === 'phase_intro' && (
-          <PhaseIntroScreen
-            phaseName={coach.phaseName}
-            durationWeeks={coach.phase.durationWeeks}
-            onAutoAdvance={coach.nextScreen}
-          />
-        )}
+      {showProgressOverview ? (
+        <ProgressOverviewScreen
+          pack={pack}
+          progression={coach.progression}
+          currentPhase={coach.phase}
+          lang={lang}
+          onClose={() => setShowProgressOverview(false)}
+        />
+      ) : (
+        <PageTransition key={coach.state.screen}>
+          {coach.state.screen === 'phase_intro' && (
+            <PhaseIntroScreen
+              phaseName={coach.phaseName}
+              durationWeeks={coach.phase.durationWeeks}
+              onAutoAdvance={coach.nextScreen}
+            />
+          )}
 
-        {coach.state.screen === 'day_prep' && coach.todayWorkout && coach.adaptations && (
-          <DayPrepScreen
-            workout={coach.todayWorkout}
-            exercises={allExercises}
-            adaptations={coach.adaptations}
-            dayNumber={coach.state.currentDay}
-            totalDays={coach.totalPhaseDays}
-            lang={lang}
-            onStart={coach.nextScreen}
-          />
-        )}
+          {coach.state.screen === 'day_prep' && (
+            <>
+              {coach.todayWorkout && coach.adaptations ? (
+                <DayPrepScreen
+                  workout={coach.todayWorkout}
+                  exercises={allExercises}
+                  adaptations={coach.adaptations}
+                  dayNumber={coach.state.currentDay}
+                  totalDays={coach.totalPhaseDays}
+                  lang={lang}
+                  onStart={coach.nextScreen}
+                />
+              ) : (
+                <RestDayScreen
+                  dayNumber={coach.state.currentDay}
+                  totalDays={coach.totalPhaseDays}
+                  onNext={coach.nextScreen}
+                />
+              )}
+            </>
+          )}
 
-        {coach.state.screen === 'workout' && coach.todayWorkout && (
-          <WorkoutScreen
-            workout={coach.todayWorkout}
-            exercises={allExercises}
-            lang={lang}
-            onComplete={coach.handleWorkoutComplete}
-          />
-        )}
+          {coach.state.screen === 'rest_day' && (
+            <RestDayScreen
+              dayNumber={coach.state.currentDay}
+              totalDays={coach.totalPhaseDays}
+              onNext={coach.nextScreen}
+            />
+          )}
 
-        {coach.state.screen === 'feedback' && (
-          <FeedbackScreen
-            onSubmit={(rpe, confidence, painReports) => {
-              coach.setFeedbackRPE(rpe)
-              coach.setFeedbackConfidence(confidence)
-              painReports.forEach(report => coach.addPainReport(report))
-              coach.nextScreen()
-            }}
-          />
-        )}
+          {coach.state.screen === 'workout' && coach.todayWorkout && (
+            <WorkoutScreen
+              workout={coach.todayWorkout}
+              exercises={allExercises}
+              lang={lang}
+              onComplete={coach.handleWorkoutComplete}
+            />
+          )}
 
-        {coach.state.screen === 'recovery' && (
-          <RecoveryScreen telemetry={telemetry} onNext={coach.nextScreen} />
-        )}
+          {coach.state.screen === 'feedback' && (
+            <FeedbackScreen
+              onSubmit={(rpe, confidence, painReports) => {
+                coach.setFeedbackRPE(rpe)
+                coach.setFeedbackConfidence(confidence)
+                painReports.forEach(report => coach.addPainReport(report))
+                coach.nextScreen()
+              }}
+            />
+          )}
 
-        {coach.state.screen === 'phase_complete' && (
-          <PhaseCompleteScreen
-            phaseName={coach.phaseName}
-            workoutsCompleted={coach.progression?.completedWorkouts.length || 0}
-            onContinue={coach.nextScreen}
-          />
-        )}
+          {coach.state.screen === 'recovery' && (
+            <RecoveryScreen telemetry={telemetry} onNext={coach.nextScreen} />
+          )}
 
-        {coach.state.screen === 'progression' && (
-          <ProgressionScreen onContinue={coach.nextScreen} />
-        )}
-      </PageTransition>
+          {coach.state.screen === 'phase_complete' && (
+            <PhaseCompleteScreen
+              phaseName={coach.phaseName}
+              workoutsCompleted={coach.progression?.completedWorkouts.length || 0}
+              onContinue={coach.nextScreen}
+            />
+          )}
+
+          {coach.state.screen === 'progression' && (
+            <ProgressionScreen onContinue={coach.nextScreen} />
+          )}
+        </PageTransition>
+      )}
     </AppLayout>
   )
 }

@@ -29,6 +29,7 @@ const DEMO_USER_ID = 'demo-user'
 type Screen =
   | 'phase_intro'
   | 'day_prep'
+  | 'rest_day'
   | 'workout'
   | 'feedback'
   | 'recovery'
@@ -42,7 +43,7 @@ type CoachState = {
   workoutData?: {
     workoutId: string
     startTime: string
-    completedExercises: CompletedExercise[] // FIXED: proper type
+    completedExercises: CompletedExercise[]
   }
   feedbackData?: {
     rpe?: 1 | 2 | 3 | 4 | 5
@@ -139,25 +140,53 @@ export function useCoach(
     ? getWorkout(pack.manifest, todayWorkoutRef.id, pack.files)
     : undefined
 
+  const isRestDay = !todayWorkout
+
   // ===== ACTIONS =====
 
   function nextScreen() {
     setState(s => {
-      if (s.screen === 'phase_intro') return { ...s, screen: 'day_prep' }
+      if (s.screen === 'phase_intro') {
+        // Check if first day is rest day
+        return { ...s, screen: isRestDay ? 'rest_day' : 'day_prep' }
+      }
+      
       if (s.screen === 'day_prep') {
+        // CRITICAL FIX: Check if workout exists
+        if (!todayWorkoutRef) {
+          console.error('No workout found for day_prep screen')
+          return { ...s, screen: 'rest_day' }
+        }
+        
         // Start workout
         return {
           ...s,
           screen: 'workout',
           workoutData: {
-            workoutId: todayWorkoutRef!.id,
+            workoutId: todayWorkoutRef.id,
             startTime: new Date().toISOString(),
             completedExercises: []
           }
         }
       }
-      // NOTE: workout -> feedback transition now handled by handleWorkoutComplete
+
+      if (s.screen === 'rest_day') {
+        // Move to next day after rest
+        const nextDay = s.currentDay + 1
+
+        if (nextDay > totalPhaseDays) {
+          return { ...s, screen: 'phase_complete', currentDay: nextDay }
+        }
+
+        return {
+          ...s,
+          currentDay: nextDay,
+          screen: 'day_prep'
+        }
+      }
+
       if (s.screen === 'feedback') return { ...s, screen: 'recovery' }
+      
       if (s.screen === 'recovery') {
         // Save workout and move to next day
         if (s.workoutData && s.feedbackData) {
@@ -171,16 +200,18 @@ export function useCoach(
           )
         }
 
+        const nextDay = s.currentDay + 1
+
         // Check if phase complete
-        if (s.currentDay >= totalPhaseDays) {
-          return { ...s, screen: 'phase_complete' }
+        if (nextDay > totalPhaseDays) {
+          return { ...s, screen: 'phase_complete', currentDay: nextDay }
         }
 
-        // Next day
+        // Next day - reset state
         return {
           ...s,
           screen: 'day_prep',
-          currentDay: s.currentDay + 1,
+          currentDay: nextDay,
           workoutData: undefined,
           feedbackData: {
             painReports: [],
@@ -188,9 +219,11 @@ export function useCoach(
           }
         }
       }
+      
       if (s.screen === 'phase_complete') {
         return { ...s, screen: 'progression' }
       }
+      
       if (s.screen === 'progression') {
         // Move to next phase
         const phases = pack.manifest.program.phases
@@ -280,7 +313,7 @@ export function useCoach(
       workoutId,
       date: new Date().toISOString().split('T')[0],
       timestamp: new Date().toISOString(),
-      exercises, // FIXED: now has real data
+      exercises,
       rpe,
       confidence,
       painReported: painReports,
@@ -290,7 +323,7 @@ export function useCoach(
     const updated: UserProgression = {
       ...progression,
       completedWorkouts: [...progression.completedWorkouts, completed],
-      currentDay: state.currentDay + 1
+      currentDay: state.currentDay
     }
 
     // Run adaptation engine
@@ -331,9 +364,10 @@ export function useCoach(
     phaseName,
     totalPhaseDays,
     todayWorkout,
+    isRestDay,
     adaptations: progression?.adaptations,
     nextScreen,
-    handleWorkoutComplete, // NEW
+    handleWorkoutComplete,
     setFeedbackRPE,
     setFeedbackConfidence,
     addPainReport,
