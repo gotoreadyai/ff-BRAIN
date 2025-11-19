@@ -52,4 +52,4 @@ export function SmallButton({ onClick, children, className = '' }: ButtonProps) 
       {children}
     </button>
   )
-}
+}       
