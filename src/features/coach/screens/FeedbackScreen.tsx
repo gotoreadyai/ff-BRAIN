@@ -1,6 +1,5 @@
 // path: src/features/coach/screens/FeedbackScreen.tsx
 
-import { motion } from 'framer-motion'
 import { useState } from 'react'
 import type { PainReport } from '../../../engine/db'
 
@@ -28,38 +27,26 @@ export default function FeedbackScreen({ onSubmit }: FeedbackScreenProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center"
-      >
-        <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-xl">
-          <span className="text-4xl">📊</span>
-        </div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Jak się czułeś?</h1>
-        <p className="text-gray-600">
-          Twoja odpowiedź pomoże AI dostosować kolejne treningi
+      <div className="text-center">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Jak się czułeś?</h1>
+        <p className="text-sm text-gray-600">
+          Feedback pomoże AI dostosować kolejne treningi
         </p>
-      </motion.div>
+      </div>
 
       {/* RPE Scale */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="bg-white rounded-2xl border border-gray-200 p-6"
-      >
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Jak trudny był trening? (RPE)
+      <div className="bg-white rounded-lg border border-gray-200 p-5">
+        <h3 className="text-base font-semibold text-gray-900 mb-3">
+          Trudność treningu (RPE)
         </h3>
-        <div className="grid grid-cols-5 gap-3">
+        <div className="grid grid-cols-5 gap-2">
           {([1, 2, 3, 4, 5] as const).map(value => (
             <button
               key={value}
               onClick={() => setRPE(value)}
-              className={`aspect-square rounded-xl text-lg font-semibold transition ${
+              className={`aspect-square rounded-lg text-base font-semibold transition ${
                 rpe === value
-                  ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-lg scale-110'
+                  ? 'bg-gray-900 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -67,30 +54,25 @@ export default function FeedbackScreen({ onSubmit }: FeedbackScreenProps) {
             </button>
           ))}
         </div>
-        <div className="mt-3 flex justify-between text-xs text-gray-500">
+        <div className="mt-2 flex justify-between text-xs text-gray-500">
           <span>Bardzo łatwy</span>
           <span>Bardzo trudny</span>
         </div>
-      </motion.div>
+      </div>
 
       {/* Confidence Scale */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="bg-white rounded-2xl border border-gray-200 p-6"
-      >
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Jak pewnie wykonałeś ćwiczenia?
+      <div className="bg-white rounded-lg border border-gray-200 p-5">
+        <h3 className="text-base font-semibold text-gray-900 mb-3">
+          Pewność wykonania
         </h3>
-        <div className="grid grid-cols-5 gap-3">
+        <div className="grid grid-cols-5 gap-2">
           {([1, 2, 3, 4, 5] as const).map(value => (
             <button
               key={value}
               onClick={() => setConfidence(value)}
-              className={`aspect-square rounded-xl text-lg font-semibold transition ${
+              className={`aspect-square rounded-lg text-base font-semibold transition ${
                 confidence === value
-                  ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-lg scale-110'
+                  ? 'bg-gray-900 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -98,40 +80,35 @@ export default function FeedbackScreen({ onSubmit }: FeedbackScreenProps) {
             </button>
           ))}
         </div>
-        <div className="mt-3 flex justify-between text-xs text-gray-500">
+        <div className="mt-2 flex justify-between text-xs text-gray-500">
           <span>Niepewnie</span>
           <span>Bardzo pewnie</span>
         </div>
-      </motion.div>
+      </div>
 
       {/* Pain Report */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="bg-white rounded-2xl border border-gray-200 p-6"
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Czy coś bolało?</h3>
+      <div className="bg-white rounded-lg border border-gray-200 p-5">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-base font-semibold text-gray-900">Ból lub dyskomfort?</h3>
           <button
             onClick={() => setShowPainForm(!showPainForm)}
-            className="px-4 py-2 rounded-lg text-sm font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 transition"
+            className="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition"
           >
-            {showPainForm ? 'Anuluj' : '+ Zgłoś ból'}
+            {showPainForm ? 'Anuluj' : '+ Zgłoś'}
           </button>
         </div>
 
         {painReports.length > 0 && (
-          <div className="space-y-2 mb-4">
+          <div className="space-y-2 mb-3">
             {painReports.map((report, idx) => (
-              <div key={idx} className="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
+              <div key={idx} className="flex items-center justify-between p-3 bg-amber-50 border border-amber-200 rounded-lg">
                 <div>
-                  <div className="font-medium text-amber-900">{report.bodyPart}</div>
+                  <div className="font-medium text-amber-900 text-sm">{report.bodyPart}</div>
                   <div className="text-xs text-amber-700">Poziom: {report.severity}/5</div>
                 </div>
                 <button
                   onClick={() => setPainReports(p => p.filter((_, i) => i !== idx))}
-                  className="text-amber-600 hover:text-amber-800"
+                  className="text-amber-600 hover:text-amber-800 text-lg font-bold"
                 >
                   ×
                 </button>
@@ -149,19 +126,16 @@ export default function FeedbackScreen({ onSubmit }: FeedbackScreenProps) {
             onCancel={() => setShowPainForm(false)}
           />
         )}
-      </motion.div>
+      </div>
 
       {/* Submit Button */}
-      <motion.button
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.4 }}
+      <button
         onClick={handleSubmit}
         disabled={!canSubmit}
-        className="w-full px-8 py-4 rounded-2xl text-lg font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:shadow-xl transition disabled:opacity-40 disabled:cursor-not-allowed"
+        className="w-full px-8 py-4 rounded-lg text-base font-semibold text-white bg-gray-900 hover:bg-gray-800 transition disabled:opacity-40 disabled:cursor-not-allowed"
       >
         Zapisz feedback →
-      </motion.button>
+      </button>
     </div>
   )
 }
@@ -197,7 +171,7 @@ function PainReportForm({ onSubmit, onCancel }: PainReportFormProps) {
   }
 
   return (
-    <div className="space-y-4 p-4 bg-gray-50 rounded-xl">
+    <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Wybierz okolicę
@@ -205,7 +179,7 @@ function PainReportForm({ onSubmit, onCancel }: PainReportFormProps) {
         <select
           value={bodyPart}
           onChange={e => setBodyPart(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-sm"
         >
           <option value="">-- Wybierz --</option>
           {bodyParts.map(part => (
@@ -218,7 +192,7 @@ function PainReportForm({ onSubmit, onCancel }: PainReportFormProps) {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Nasilenie bólu: {severity}/5
+          Nasilenie: {severity}/5
         </label>
         <input
           type="range"
@@ -239,7 +213,7 @@ function PainReportForm({ onSubmit, onCancel }: PainReportFormProps) {
         <button
           onClick={handleSubmit}
           disabled={!bodyPart}
-          className="flex-1 px-4 py-2 rounded-lg text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex-1 px-4 py-2 rounded-lg text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Dodaj
         </button>
