@@ -1,7 +1,7 @@
 {
-  "name": "fitpack-ai",
+  "name": "fitbrain-pack",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,20 +9,21 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "dexie": "^4.0.8",
-    "framer-motion": "^11.5.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "framer-motion": "^11.0.0",
     "jszip": "^3.10.1",
-    "marked": "^13.0.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "dexie": "^3.2.4",
+    "marked": "^12.0.0",
+    "lucide-react": "^0.263.1"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.1.17",
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.3.1",
-    "tailwindcss": "^4.0.0",
-    "typescript": "^5.5.3",
-    "vite": "^5.4.0"
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.0",
+    "@tailwindcss/vite": "^4.0.0",
+    "tailwindcss": "^4.0.0"
   }
 }

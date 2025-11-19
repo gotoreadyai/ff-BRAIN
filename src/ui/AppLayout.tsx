@@ -1,6 +1,7 @@
 // path: src/ui/AppLayout.tsx
 
 import { type ReactNode, useState } from 'react'
+import { BarChart3 } from 'lucide-react'
 import type { Pack, LangCode, Level, Phase } from '../engine/model'
 import { getPhaseName } from '../engine/manifest'
 
@@ -81,20 +82,16 @@ export default function AppLayout({
         <div className={`${sidebarCollapsed ? 'p-2' : 'p-4'} border-b border-gray-100`}>
           <button
             onClick={onShowProgress}
-            className={`w-full rounded-lg text-sm font-medium transition bg-amber-500 text-white hover:bg-amber-700 ${
-              sidebarCollapsed ? 'p-1 flex justify-center' : 'px-4 py-3'
+            className={`w-full rounded-lg text-sm font-medium transition bg-amber-500 text-white hover:bg-amber-600 ${
+              sidebarCollapsed ? 'p-2 flex justify-center' : 'px-4 py-3'
             }`}
             title={sidebarCollapsed ? 'Twój postęp' : undefined}
           >
             {sidebarCollapsed ? (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
+              <BarChart3 className="w-5 h-5" />
             ) : (
               <div className="flex items-center gap-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
+                <BarChart3 className="w-5 h-5" />
                 <span>Twój postęp</span>
               </div>
             )}
@@ -120,7 +117,7 @@ export default function AppLayout({
                     isActive
                       ? 'bg-gray-900 text-white'
                       : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-                  } ${sidebarCollapsed ? 'p-1 flex justify-center' : 'px-3 py-3'}`}
+                  } ${sidebarCollapsed ? 'p-2 flex justify-center' : 'px-3 py-3'}`}
                   title={sidebarCollapsed ? name : undefined}
                 >
                   {sidebarCollapsed ? (

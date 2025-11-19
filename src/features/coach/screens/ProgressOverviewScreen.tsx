@@ -1,8 +1,14 @@
 // path: src/features/coach/screens/ProgressOverviewScreen.tsx
 
+import { X } from 'lucide-react'
 import type { Pack, Phase } from '../../../engine/model'
 import type { UserProgression } from '../../../engine/db'
 import { getPhaseName, getTotalPhaseDays } from '../../../engine/manifest'
+import { Card } from '../../../ui/components/Card'
+import { StatBox, ProgressBar } from '../../../ui/components/Section'
+import { PrimaryButton } from '../../../ui/components/Button'
+import { AIAlert } from '../../../ui/components/AIAlert'
+import { ProgramHeader, PhaseTimeline, TelemetryGrid } from '../../../ui/components/ProgressComponents'
 
 type ProgressOverviewScreenProps = {
   pack: Pack
@@ -22,7 +28,6 @@ export default function ProgressOverviewScreen({
   const program = pack.manifest.program
   const phases = program.phases
   
-  // Calculate stats
   const totalWorkouts = progression.completedWorkouts.length
   const currentPhaseIdx = phases.findIndex(p => p.id === currentPhase.id)
   const totalPhaseDays = getTotalPhaseDays(currentPhase)
@@ -41,198 +46,83 @@ export default function ProgressOverviewScreen({
     0
   )
 
-  const programGoalText = {
-    strength: 'Budowa siły',
-    muscle_gain: 'Budowa masy',
-    fat_loss: 'Redukcja tkanki tłuszczowej',
-    endurance: 'Wytrzymałość',
-    general_health: 'Ogólne zdrowie'
-  }
+  const phaseData = phases.map((phase, idx) => ({
+    id: phase.id,
+    name: getPhaseName(phase, lang),
+    durationWeeks: phase.durationWeeks,
+    daysPerWeek: phase.workoutSchedule.daysPerWeek,
+    isPast: idx < currentPhaseIdx,
+    isCurrent: idx === currentPhaseIdx,
+    progress: idx === currentPhaseIdx ? phaseProgress : undefined
+  }))
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Twój postęp</h1>
         <button
           onClick={onClose}
           className="p-2 hover:bg-gray-100 rounded-lg transition"
         >
-          <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <X className="w-6 h-6 text-gray-600" />
         </button>
       </div>
 
-      {/* Pack Info */}
-      <div className="bg-gray-900 rounded-lg p-5 text-white">
-        <div className="flex items-start justify-between mb-3">
-          <div>
-            <h2 className="text-lg font-bold mb-1">
-              {program.title[lang] || program.title['pl']}
-            </h2>
-            <p className="text-sm opacity-70">
-              {program.description[lang] || program.description['pl']}
-            </p>
-          </div>
-        </div>
-        <div className="flex gap-4 text-sm">
-          <div>
-            <span className="opacity-70">Cel:</span>{' '}
-            <span className="font-semibold">{programGoalText[program.goal]}</span>
-          </div>
-          <div>
-            <span className="opacity-70">Fazy:</span>{' '}
-            <span className="font-semibold">{phases.length}</span>
-          </div>
-        </div>
-      </div>
+      <ProgramHeader
+        title={program.title[lang] || program.title['pl']}
+        description={program.description[lang] || program.description['pl']}
+        goal={program.goal}
+        phasesCount={phases.length}
+      />
 
-      {/* Current Progress */}
-      <div className="bg-white rounded-lg border border-gray-200 p-5">
+      <Card>
         <h3 className="text-base font-semibold text-gray-900 mb-4">Aktualny postęp</h3>
         
-        <div className="space-y-4">
-          {/* Current Phase */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">
-                Faza {currentPhaseIdx + 1}/{phases.length}: {getPhaseName(currentPhase, lang)}
-              </span>
-              <span className="text-sm font-semibold text-gray-900">{phaseProgress}%</span>
-            </div>
-            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gray-900 transition-all"
-                style={{ width: `${phaseProgress}%` }}
-              />
-            </div>
-            <div className="mt-1 text-xs text-gray-500">
-              Dzień {progression.currentDay} / {totalPhaseDays}
-            </div>
-          </div>
+        <ProgressBar
+          current={progression.currentDay}
+          total={totalPhaseDays}
+          label={`Faza ${currentPhaseIdx + 1}/${phases.length}: ${getPhaseName(currentPhase, lang)}`}
+        />
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 gap-3 pt-3 border-t">
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-2xl font-bold text-gray-900">{totalWorkouts}</div>
-              <div className="text-xs text-gray-500 mt-1">Treningi</div>
-            </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-2xl font-bold text-gray-900">{avgRPE}</div>
-              <div className="text-xs text-gray-500 mt-1">Śr. RPE</div>
-            </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-2xl font-bold text-gray-900">{avgConfidence}</div>
-              <div className="text-xs text-gray-500 mt-1">Śr. pewność</div>
-            </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-2xl font-bold text-gray-900">{totalPainReports}</div>
-              <div className="text-xs text-gray-500 mt-1">Zgłoszenia bólu</div>
-            </div>
-          </div>
+        <div className="grid grid-cols-2 gap-3 pt-4 mt-4 border-t">
+          <StatBox value={totalWorkouts} label="Treningi" />
+          <StatBox value={avgRPE} label="Śr. RPE" />
+          <StatBox value={avgConfidence} label="Śr. pewność" />
+          <StatBox value={totalPainReports} label="Zgłoszenia bólu" />
         </div>
-      </div>
+      </Card>
 
-      {/* Timeline - All Phases */}
-      <div className="bg-white rounded-lg border border-gray-200 p-5">
+      <Card>
         <h3 className="text-base font-semibold text-gray-900 mb-4">Oś czasu programu</h3>
-        <div className="space-y-3">
-          {phases.map((phase, idx) => {
-            const isPast = idx < currentPhaseIdx
-            const isCurrent = idx === currentPhaseIdx
-            const isFuture = idx > currentPhaseIdx
-            
-            return (
-              <div key={phase.id} className="flex items-start gap-3">
-                <div
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold shrink-0 ${
-                    isPast
-                      ? 'bg-green-600 text-white'
-                      : isCurrent
-                      ? 'bg-gray-900 text-white'
-                      : 'bg-gray-200 text-gray-500'
-                  }`}
-                >
-                  {isPast ? '✓' : idx + 1}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className={`font-medium ${isCurrent ? 'text-gray-900' : 'text-gray-600'}`}>
-                    {getPhaseName(phase, lang)}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {phase.durationWeeks} tyg. • {phase.workoutSchedule.daysPerWeek}x/tydzień
-                  </div>
-                  {isCurrent && (
-                    <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gray-900"
-                        style={{ width: `${phaseProgress}%` }}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
+        <PhaseTimeline phases={phaseData} />
+      </Card>
 
-      {/* Adaptations Info */}
       {progression.adaptations.intensityModifier !== 1.0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <h3 className="text-sm font-semibold text-amber-900 mb-2">
-            Aktywne adaptacje AI
-          </h3>
-          <p className="text-sm text-amber-800">
+        <AIAlert title="Aktywne adaptacje AI">
+          <p>
             Intensywność zmodyfikowana: {Math.round(progression.adaptations.intensityModifier * 100)}%
           </p>
           {Object.keys(progression.adaptations.exerciseReplacements).length > 0 && (
-            <p className="text-sm text-amber-800 mt-1">
+            <p>
               Zamieniono {Object.keys(progression.adaptations.exerciseReplacements).length} ćwiczeń
             </p>
           )}
-        </div>
+        </AIAlert>
       )}
 
-      {/* Telemetry */}
-      <div className="bg-white rounded-lg border border-gray-200 p-5">
+      <Card>
         <h3 className="text-base font-semibold text-gray-900 mb-4">Telemetria</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <div className="text-lg font-bold text-gray-900">
-              {progression.telemetry.avgSleepHours.toFixed(1)}h
-            </div>
-            <div className="text-xs text-gray-500">Śr. sen</div>
-          </div>
-          <div>
-            <div className="text-lg font-bold text-gray-900">
-              {progression.telemetry.avgSteps.toLocaleString('pl-PL')}
-            </div>
-            <div className="text-xs text-gray-500">Śr. kroki</div>
-          </div>
-          <div>
-            <div className="text-lg font-bold text-gray-900">
-              {progression.telemetry.avgHeartRate}
-            </div>
-            <div className="text-xs text-gray-500">Śr. HR (bpm)</div>
-          </div>
-          <div>
-            <div className="text-lg font-bold text-gray-900">
-              {progression.telemetry.avgCaloriesBurned}
-            </div>
-            <div className="text-xs text-gray-500">Śr. kcal</div>
-          </div>
-        </div>
-      </div>
+        <TelemetryGrid
+          avgSleepHours={progression.telemetry.avgSleepHours}
+          avgSteps={progression.telemetry.avgSteps}
+          avgHeartRate={progression.telemetry.avgHeartRate}
+          avgCaloriesBurned={progression.telemetry.avgCaloriesBurned}
+        />
+      </Card>
 
-      {/* Close Button */}
-      <button
-        onClick={onClose}
-        className="w-full px-8 py-4 rounded-lg text-base font-semibold text-white bg-gray-900 hover:bg-gray-800 transition"
-      >
+      <PrimaryButton onClick={onClose}>
         Zamknij
-      </button>
+      </PrimaryButton>
     </div>
   )
 }
